@@ -1,19 +1,14 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const jwtService = require('../services/jwtService');
+const userModel = require('../models/userModel');
 
-// Função de login
-const login = async (req, res) => {
-  const { username, password } = req.body;
+exports.login = (req, res) => {
+  const credentials = req.body;
+  const user = userModel.findUser(credentials);
 
-  const user = await User.findOne({ username });
-  if (!user) return res.status(404).json({ message: 'User not found' });
-
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
-
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-  res.json({ token });
+  if (user) {
+    const token = jwtService.generateToken(user.id, user.perfil);
+    res.json({ token });
+  } else {
+    res.status(401).json({ message: 'Invalid credentials' });
+  }
 };
-
-module.exports = { login };

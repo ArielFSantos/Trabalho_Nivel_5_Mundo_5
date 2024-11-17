@@ -1,23 +1,19 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-
-dotenv.config();
+const authRoutes = require('./routes/authRoutes');
+const { port } = require('./config');
 
 const app = express();
 app.use(bodyParser.json());
+const protectedRoutes = require('./routes/protectedRoutes');
 
-// Conectar ao banco de dados
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
+app.use('/api', protectedRoutes);
 
-// Importar rotas
-const authRoutes = require('./routes/auth');
+
+// Rotas
 app.use('/api/auth', authRoutes);
 
-const port = process.env.PORT || 3000;
+// Iniciar o servidor
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`Servidor rodando na porta ${port}`);
 });
